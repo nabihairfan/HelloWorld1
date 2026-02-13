@@ -1,7 +1,6 @@
 // app/login/page.js
 'use client';
-import { supabase } from '../../utils/supabaseClient'; // Added an extra '../'
-
+import { supabase } from '@/utils/supabaseClient';
 export default function LoginPage() {
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
