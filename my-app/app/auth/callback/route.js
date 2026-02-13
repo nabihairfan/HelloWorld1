@@ -1,24 +1,37 @@
-// app/login/page.js
-'use client';
-import { supabase } from '../utils/supabaseClient';
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
-export default function LoginPage() {
-  const handleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        // PUT IT HERE: This is the ID from your assignment
-        queryParams: {
-          client_id: '388960353527-fh4grc6mla425lg0e3g1hh67omtrdihd.apps.googleusercontent.com',
+// DO NOT add 'use client' here. This is a Server File.
+
+export async function GET(request) {
+  const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
+
+  if (code) {
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            return cookieStore.get(name)?.value
+          },
+          set(name, value, options) {
+            cookieStore.set({ name, value, ...options })
+          },
+          remove(name, options) {
+            cookieStore.set({ name, value: '', ...options })
+          },
         },
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-  };
+      }
+    )
+    
+    // This exchanges the code from Google for a session
+    await supabase.auth.exchangeCodeForSession(code)
+  }
 
-  return (
-    <div>
-      <button onClick={handleLogin}>Sign in with Google</button>
-    </div>
-  );
+  // URL to redirect to after sign in process completes
+  return NextResponse.redirect(`${origin}/`)
 }
