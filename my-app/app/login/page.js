@@ -1,6 +1,6 @@
 // app/login/page.js
 'use client';
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../../utils/supabaseClient'; // Added an extra '../'
 
 export default function LoginPage() {
   const handleLogin = async () => {
